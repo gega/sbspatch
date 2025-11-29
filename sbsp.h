@@ -30,7 +30,10 @@
 #include <stdint.h>
 #include <string.h>
 
+#ifndef BSP_WRITE_CHUNK
 #define BSP_WRITE_CHUNK (4)
+#endif
+
 #define BSP_MORE (0)
 #define BSP_DONE (1)
 #define BSP_ERR  (-1)
@@ -127,6 +130,7 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
       }
       bs->spos=0;
       bs->state=BSST_DIFF;
+      if(bs->ctrl[0]<0 || bs->ctrl[1]<0) return(BSP_ERR);
     }
 
     // diff
@@ -173,6 +177,7 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
       if(i>=bs->ctrl[1])
       {
         bs->oldpos+=bs->ctrl[2];
+        if(bs->oldpos<-BSP_WRITE_CHUNK || bs->oldpos>bs->oldsize) return(BSP_ERR);
         bs->spos=0;
         bs->state=BSST_CTRL;
       }
