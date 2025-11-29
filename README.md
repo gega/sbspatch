@@ -1,7 +1,7 @@
 # sbsp
 A header-only, streaming re-implementation of the bsdiff patch algorithm (bspatch), built for low-memory environments and embedded systems.
 
-### **features**
+### **Features**
 
 * **Streaming API**
 
@@ -12,12 +12,12 @@ A header-only, streaming re-implementation of the bsdiff patch algorithm (bspatc
     * `SBSP_DONE` → patching complete
   * No file I/O, no dynamic memory allocations.
 
-* **Raw Patch Format (No Compression)**
+* **Uncompressed Patch Format**
 
   * Patch data is stored **uncompressed**, making it roughly the size of the original or new file.
   * The output is **highly compressible**. Users are expected to **apply their own compression** when storing or transferring patches.
 
-* **Custom Magic Header**
+* **Custom Magic**
 
   * Uses `"BSGG"` instead of the original `"ENDSLEY/BSDIFF43`, allowing safe identification of the modified format.
 
@@ -50,7 +50,7 @@ while(stream_has_data()) {
 
 ---
 
-### **Write Callback Format**
+### **Write Callback**
 
 ```c
 int my_write(void *userdata, int position, uint8_t *data, int len);
