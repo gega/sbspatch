@@ -29,6 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+#define BSP_WRITE_CHUNK (4)
 #define SBSP_IMPLEMENTATION
 #include "sbsp.h"
 
