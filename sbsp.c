@@ -48,8 +48,15 @@ int main(int argc, char **argv)
 
   if(argc<3)
   {
-    printf("Usage: %s oldfile pathfile newfile\n",argv[0]);
+    printf("Usage: %s oldfile patchfile newfile [buffer-length]\n",argv[0]);
     return(0);
+  }
+  int buffer_len=256;
+  if(argc>4) buffer_len=atoi(argv[4]);
+  if(buffer_len<5||buffer_len>2000000)
+  {
+    fprintf(stderr,"buffer-length out of range!\n");
+    exit(1);
   }
   FILE *fo=fopen(argv[1],"rb");
   if(NULL!=fo)
@@ -62,14 +69,15 @@ int main(int argc, char **argv)
     fclose(fo);
     FILE *fn=fopen(argv[3],"wb");
     sbsp_init(&sbs, old, osiz, wnew, fn);
-    uint8_t wbuf[7];
+    uint8_t *wbuf=malloc(buffer_len);
     FILE *fp=fopen(argv[2],"rb");
     int st;
     do
     {
-      int rl=fread(wbuf,1,sizeof(wbuf),fp);
+      int rl=fread(wbuf,1,buffer_len,fp);
       st=sbsp_patch(&sbs,wbuf,rl);
     } while(st==SBSP_MORE);
+    free(wbuf);
     fclose(fn);
     fclose(fp);
   }
