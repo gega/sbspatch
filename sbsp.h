@@ -29,7 +29,6 @@
 
 #include <stdint.h>
 #include <string.h>
-//#include <stdlib.h>
 
 #define BSP_WRITE_CHUNK (4)
 #define BSP_MORE (0)
@@ -107,7 +106,7 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         bs->spos++;
         if(--inlen==0) return(BSP_MORE);
       }
-      if(memcmp(bs->buf,"BSGG",4) != 0) fprintf(stderr,"INVALID MAGIC\n");
+      if(memcmp(bs->buf,"BSGG",4) != 0) return(BSP_ERR);
       bs->newsize=offtin(&bs->buf[4]);
       bs->spos=0;
       bs->state=BSST_CTRL;
@@ -140,7 +139,11 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         ++bs->newpos;
         ++bs->oldpos;
         ++bs->spos;
-        if(bs->outfill==BSP_WRITE_CHUNK) { bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK); bs->outfill=0; }
+        if(bs->outfill==BSP_WRITE_CHUNK)
+        {
+          bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK);
+          bs->outfill=0;
+        }
       }
       if(i>=bs->ctrl[0])
       {
@@ -161,7 +164,11 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         bs->outfill++;
         bs->spos++;
         ++bs->newpos;
-        if(bs->outfill==BSP_WRITE_CHUNK) { bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK); bs->outfill=0; }
+        if(bs->outfill==BSP_WRITE_CHUNK)
+        {
+          bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK);
+          bs->outfill=0;
+        }
       }
       if(i>=bs->ctrl[1])
       {
