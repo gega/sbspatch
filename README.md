@@ -1,4 +1,4 @@
-# sbspatch
+# sbsp
 A header-only, streaming re-implementation of the bsdiff patch algorithm (bspatch), built for low-memory environments and embedded systems.
 
 ### **features**
