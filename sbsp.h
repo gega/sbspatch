@@ -30,22 +30,22 @@
 #include <stdint.h>
 #include <string.h>
 
-#ifndef BSP_WRITE_CHUNK
-#define BSP_WRITE_CHUNK (4)
+#ifndef SBSP_WRITE_CHUNK
+#define SBSP_WRITE_CHUNK (4)
 #endif
 
-#define BSP_MORE (0)
-#define BSP_DONE (1)
-#define BSP_ERR  (-1)
+#define SBSP_MORE (0)
+#define SBSP_DONE (1)
+#define SBSP_ERR  (-1)
 
-#define BSST_HEADER (0)
-#define BSST_CTRL (1)
-#define BSST_DIFF (2)
-#define BSST_XTRA (3)
+#define SBSST_HEADER (0)
+#define SBSST_CTRL (1)
+#define SBSST_DIFF (2)
+#define SBSST_XTRA (3)
 
-typedef int (*bsp_write_cb_t)(void *, int, uint8_t *, int);
+typedef int (*sbsp_write_cb_t)(void *, int, uint8_t *, int);
 
-struct bsp
+struct sbsp
 {
   uint8_t buf[8+4];
   int32_t oldpos;
@@ -56,9 +56,9 @@ struct bsp
   int32_t spos;
   const uint8_t *old;
   int32_t oldsize;
-  uint8_t out[BSP_WRITE_CHUNK];
+  uint8_t out[SBSP_WRITE_CHUNK];
   int16_t outfill;
-  bsp_write_cb_t write;
+  sbsp_write_cb_t write;
   void *ud;
 };
 
@@ -83,9 +83,9 @@ static int64_t offtin(uint8_t *buf)
 }
 
 
-int bspatch_init(struct bsp *bs, uint8_t *old, int32_t oldsize, bsp_write_cb_t write_cb, void *userdata)
+int sbsp_init(struct sbsp *bs, uint8_t *old, int32_t oldsize, sbsp_write_cb_t write_cb, void *userdata)
 {
-  memset(bs, 0, sizeof(struct bsp));
+  memset(bs, 0, sizeof(struct sbsp));
   bs->old=old;
   bs->oldsize=oldsize;
   bs->write=write_cb;
@@ -93,30 +93,30 @@ int bspatch_init(struct bsp *bs, uint8_t *old, int32_t oldsize, bsp_write_cb_t w
   return(0);
 }
 
-int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
+int sbsp_patch(struct sbsp *bs, uint8_t *in, int32_t inlen)
 {
   int32_t i,n=0;
 
-  while(bs->newpos<bs->newsize || bs->state==BSST_HEADER)
+  while(bs->newpos<bs->newsize || bs->state==SBSST_HEADER)
   {
     // read header
-    if(bs->state==BSST_HEADER)
+    if(bs->state==SBSST_HEADER)
     {
       for(; bs->spos<sizeof(bs->buf); n++)
       {
         // read more buf
         bs->buf[bs->spos]=in[n];
         bs->spos++;
-        if(--inlen==0) return(BSP_MORE);
+        if(--inlen==0) return(SBSP_MORE);
       }
-      if(memcmp(bs->buf,"BSGG",4) != 0) return(BSP_ERR);
+      if(memcmp(bs->buf,"BSGG",4) != 0) return(SBSP_ERR);
       bs->newsize=offtin(&bs->buf[4]);
       bs->spos=0;
-      bs->state=BSST_CTRL;
+      bs->state=SBSST_CTRL;
     }
 
     // read ctrl block
-    if(bs->state==BSST_CTRL)
+    if(bs->state==SBSST_CTRL)
     {
       for(; bs->spos<24; n++)
       {
@@ -126,15 +126,15 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         bs->buf[idx]=in[n];
         if(idx==7) bs->ctrl[i]=offtin(bs->buf);
         bs->spos++;
-        if(--inlen==0) return(BSP_MORE);
+        if(--inlen==0) return(SBSP_MORE);
       }
       bs->spos=0;
-      bs->state=BSST_DIFF;
-      if(bs->ctrl[0]<0 || bs->ctrl[1]<0) return(BSP_ERR);
+      bs->state=SBSST_DIFF;
+      if(bs->ctrl[0]<0 || bs->ctrl[1]<0) return(SBSP_ERR);
     }
 
     // diff
-    if(bs->state==BSST_DIFF)
+    if(bs->state==SBSST_DIFF)
     {
       for(i=bs->spos; i<bs->ctrl[0]&&inlen>0; i++,n++,--inlen)
       {
@@ -143,24 +143,24 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         ++bs->newpos;
         ++bs->oldpos;
         ++bs->spos;
-        if(bs->outfill==BSP_WRITE_CHUNK)
+        if(bs->outfill==SBSP_WRITE_CHUNK)
         {
-          bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK);
+          bs->write(bs->ud, bs->newpos-SBSP_WRITE_CHUNK, bs->out, SBSP_WRITE_CHUNK);
           bs->outfill=0;
         }
       }
       if(i>=bs->ctrl[0])
       {
         bs->spos=0;
-        bs->state=BSST_XTRA;
+        bs->state=SBSST_XTRA;
       }
       if(inlen<=0)
       {
-        return(BSP_MORE);
+        return(SBSP_MORE);
       }
     }
 
-    if(bs->state==BSST_XTRA)
+    if(bs->state==SBSST_XTRA)
     {
       for(i=bs->spos; i<bs->ctrl[1]&&inlen>0; i++,n++,--inlen)
       {
@@ -168,23 +168,23 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
         bs->outfill++;
         bs->spos++;
         ++bs->newpos;
-        if(bs->outfill==BSP_WRITE_CHUNK)
+        if(bs->outfill==SBSP_WRITE_CHUNK)
         {
-          bs->write(bs->ud, bs->newpos-BSP_WRITE_CHUNK, bs->out, BSP_WRITE_CHUNK);
+          bs->write(bs->ud, bs->newpos-SBSP_WRITE_CHUNK, bs->out, SBSP_WRITE_CHUNK);
           bs->outfill=0;
         }
       }
       if(i>=bs->ctrl[1])
       {
         bs->oldpos+=bs->ctrl[2];
-        if(bs->oldpos<-BSP_WRITE_CHUNK || bs->oldpos>bs->oldsize) return(BSP_ERR);
+        if(bs->oldpos<-SBSP_WRITE_CHUNK || bs->oldpos>bs->oldsize) return(SBSP_ERR);
         bs->spos=0;
-        bs->state=BSST_CTRL;
+        bs->state=SBSST_CTRL;
       }
       if(bs->newpos >= bs->newsize) break;
       if(inlen<=0)
       {
-        return(BSP_MORE);
+        return(SBSP_MORE);
       }
     }
 
@@ -195,6 +195,6 @@ int bspatch(struct bsp *bs, uint8_t *in, int32_t inlen)
     bs->write(bs->ud, bs->newpos-bs->outfill, bs->out, bs->outfill);
   }
 
-  return(BSP_DONE);
+  return(SBSP_DONE);
 }
 #endif

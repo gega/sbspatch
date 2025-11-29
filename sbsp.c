@@ -29,7 +29,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define BSP_WRITE_CHUNK (4)
+#define SBSP_WRITE_CHUNK (4)
 #define SBSP_IMPLEMENTATION
 #include "sbsp.h"
 
@@ -44,7 +44,7 @@ static int wnew(void  *ud, int addr, uint8_t *buf, int len)
 int main(int argc, char **argv)
 {
   uint8_t *old;
-  struct bsp bs={0};
+  struct sbsp sbs={0};
 
   if(argc<3)
   {
@@ -61,15 +61,15 @@ int main(int argc, char **argv)
     fread(old,1,osiz,fo);
     fclose(fo);
     FILE *fn=fopen(argv[3],"wb");
-    bspatch_init(&bs, old, osiz, wnew, fn);
+    sbsp_init(&sbs, old, osiz, wnew, fn);
     uint8_t wbuf[7];
     FILE *fp=fopen(argv[2],"rb");
     int st;
     do
     {
       int rl=fread(wbuf,1,sizeof(wbuf),fp);
-      st=bspatch(&bs,wbuf,rl);
-    } while(st!=BSP_DONE);
+      st=sbsp_patch(&sbs,wbuf,rl);
+    } while(st==SBSP_MORE);
     fclose(fn);
     fclose(fp);
   }
