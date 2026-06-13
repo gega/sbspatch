@@ -33,7 +33,7 @@
 #define SBSP_IMPLEMENTATION
 #include "sbsp.h"
 
-static int wnew(void  *ud, int addr, uint8_t *buf, int len)
+static int wnew(void  *ud, int addr, const uint8_t *buf, int len)
 {
   int ret=-1;
   FILE *f=(FILE *)ud;

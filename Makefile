@@ -9,3 +9,6 @@ sbsdiff:	sbsdiff.c
 
 test:	sbsp sbsdiff
 	./test.sh 100
+
+clean:
+	rm -f *.o

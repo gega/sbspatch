@@ -43,7 +43,7 @@
 #define SBSST_DIFF (2)
 #define SBSST_XTRA (3)
 
-typedef int (*sbsp_write_cb_t)(void *, int, uint8_t *, int);
+typedef int (*sbsp_write_cb_t)(void *, int, const uint8_t *, int);
 
 struct sbsp
 {
@@ -66,7 +66,7 @@ struct sbsp
 
 #ifdef SBSP_IMPLEMENTATION
 
-static int64_t offtin(uint8_t *buf)
+static int64_t offtin(const uint8_t *buf)
 {
   int64_t y;
 
@@ -83,7 +83,7 @@ static int64_t offtin(uint8_t *buf)
 }
 
 
-int sbsp_init(struct sbsp *bs, uint8_t *old, int32_t oldsize, sbsp_write_cb_t write_cb, void *userdata)
+int sbsp_init(struct sbsp *bs, const uint8_t *old, int32_t oldsize, sbsp_write_cb_t write_cb, void *userdata)
 {
   memset(bs, 0, sizeof(struct sbsp));
   bs->old=old;
@@ -93,7 +93,7 @@ int sbsp_init(struct sbsp *bs, uint8_t *old, int32_t oldsize, sbsp_write_cb_t wr
   return(0);
 }
 
-int sbsp_patch(struct sbsp *bs, uint8_t *in, int32_t inlen)
+int sbsp_patch(struct sbsp *bs, const uint8_t *in, int32_t inlen)
 {
   int32_t i,n=0;
 

@@ -2,6 +2,11 @@
 
 NTEST=$1
 
+if [ "$NTEST" == "" ]; then
+  echo "Usage: $0 number-of-tests"
+  exit 1
+fi
+
 if [ $NTEST -lt 1 ]; then
   NTEST=1
 fi
